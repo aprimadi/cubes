@@ -3,16 +3,18 @@
 from __future__ import absolute_import
 
 from collections import namedtuple
+from typing import Any, Optional
 
 from ..calendar import CalendarMemberConverter
 from ..logging import get_logger
 from ..common import IgnoringDictionary
 from ..errors import ArgumentError, NoSuchAttributeError, HierarchyError
 from ..metadata import string_to_dimension_level
+from ..stores import Store
 
 from .statutils import calculators_for_aggregates, available_calculators
 from .cells import Cell, PointCut, RangeCut, SetCut, cuts_from_string
-from ..metadata import Dimension
+from ..metadata import Cube, Dimension
 
 from .. import compat
 
@@ -49,13 +51,16 @@ class AggregationBrowser(object):
 
     builtin_functions = []
 
-    def __init__(self, cube, store=None, locale=None, **options):
+    def __init__(
+        self,
+        cube: Cube,
+        store: Optional[Store] = None,
+        locale: Optional[str] = None,
+        **options: Any
+    ) -> None:
         """Creates and initializes the aggregation browser. Subclasses should
         override this method. """
         super(AggregationBrowser, self).__init__()
-
-        if not cube:
-            raise ArgumentError("No cube given for aggregation browser")
 
         self.cube = cube
         self.store = store
