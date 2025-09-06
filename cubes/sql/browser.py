@@ -10,7 +10,7 @@ try:
     import sqlalchemy.sql as sql
 
 except ImportError:
-    from ...common import MissingPackage
+    from ..common import MissingPackage
     sqlalchemy = sql = MissingPackage("sqlalchemy", "SQL aggregation browser")
 
 from ..query import available_calculators
@@ -18,14 +18,14 @@ from ..query import AggregationBrowser, AggregationResult, Drilldown
 from ..query import Cell, PointCut
 from ..logging import get_logger
 from ..errors import ArgumentError, InternalError
-from ..stores import Store
 from ..metadata import collect_attributes
 from .. import compat
 
 from .functions import available_aggregate_functions
 from .mapper import DenormalizedMapper, StarSchemaMapper, map_base_attributes
 from .mapper import distill_naming
-from .query import StarSchema, QueryContext, to_join, FACT_KEY_LABEL
+from .query import StarSchema, QueryContext, to_join
+from .store import SQLStore
 from .utils import paginate_query, order_query
 
 
@@ -116,7 +116,7 @@ class SQLBrowser(AggregationBrowser):
         # Database connection and metadata
         # --------------------------------
 
-        if isinstance(store, Store):
+        if isinstance(store, SQLStore):
             self.connectable = store.connectable
             metadata = store.metadata
         else:
@@ -202,11 +202,11 @@ class SQLBrowser(AggregationBrowser):
 
         return features
 
-    def is_builtin_function(self, funcname):
+    def is_builtin_function(self, function_name) -> bool:
         """Returns `True` if the function `funcname` is backend's built-in
         function."""
 
-        return funcname in available_aggregate_functions()
+        return function_name in available_aggregate_functions()
 
     def fact(self, key_value, fields=None):
         """Get a single fact with key `key_value` from cube.

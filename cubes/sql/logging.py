@@ -2,11 +2,13 @@
 
 from __future__ import absolute_import
 
-from ...server.logging import RequestLogHandler, REQUEST_LOG_ITEMS
-from sqlalchemy import create_engine, Table, MetaData, Column
+from sqlalchemy import Table, MetaData, Column
 from sqlalchemy import Integer, Sequence, DateTime, String, Float
 from sqlalchemy.exc import NoSuchTableError
-from ...browser import Drilldown
+
+from ..server.logging import RequestLogHandler
+
+from .browser import Drilldown
 from .store import create_sqlalchemy_engine
 
 import logging
@@ -142,4 +144,3 @@ class SQLRequestLogHandler(RequestLogHandler):
 
         trans.commit()
         connection.close()
-

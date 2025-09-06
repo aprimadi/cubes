@@ -248,7 +248,7 @@ class AggregationBrowser(object):
 
                 try:
                     aggregate = self.cube.aggregate(agg.measure)
-                except NoSuchAttributeError as e:
+                except NoSuchAttributeError:
                     raise NoSuchAttributeError("Cube '%s' has no measure aggregate "
                                             "'%s' for '%s'" % (self.cube.name,
                                                                agg.measure,
@@ -258,7 +258,7 @@ class AggregationBrowser(object):
         aggregates += dependencies
         return aggregates
 
-    def prepare_order(self, order, is_aggregate=False):
+    def prepare_order(self, order, is_aggregate: bool = False):
         """Prepares an order list. Returns list of tuples (`attribute`,
         `order_direction`). `attribute` is cube's attribute object."""
 
@@ -719,8 +719,8 @@ class AggregationResult(object):
         self.drilldown = drilldown
 
         # TODO: Experimental, undocumented
-        if drilldown:
-            attrs = [attr.ref for attr in self.drilldown.all_attributes]
+        if drilldown is not None:
+            attrs = [attr.ref for attr in drilldown.all_attributes]
             self.attributes = attrs
         else:
             self.attributes = []

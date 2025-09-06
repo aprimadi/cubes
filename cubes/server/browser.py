@@ -1,7 +1,5 @@
 # -*- coding=utf -*-
 
-import json
-import logging
 from ..logging import get_logger
 from ..query import *
 
@@ -154,7 +152,7 @@ class SlicerBrowser(AggregationBrowser):
         if dimension:
             params["dimension"] = str(dimension)
 
-        response = self.store.cube_request("cell", self.cube.basename, params) 
+        response = self.store.cube_request("cell", self.cube.basename, params)
 
         return response
 
@@ -170,4 +168,3 @@ class SlicerBrowser(AggregationBrowser):
         """Prepare an order string in form: ``attribute:direction``"""
         string = ",".join("%s:%s" % (o[0], o[1]) for o in order)
         return string
-

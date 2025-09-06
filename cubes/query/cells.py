@@ -6,6 +6,7 @@ import copy
 import re
 
 from collections import OrderedDict
+from typing import List, Optional, Union
 
 from ..errors import ArgumentError, CubesError
 from ..metadata import Dimension, Cube
@@ -33,12 +34,57 @@ __all__ = [
 NULL_PATH_VALUE = '__null__'
 
 
+class Cut(object):
+    def __init__(
+        self,
+        dimension: Union[Dimension, str],
+        hierarchy: Optional[str] = None,
+        invert: bool = False,
+        hidden: bool = False
+    ) -> None:
+        """Abstract class for a cell cut.
+
+        A cut is a filter / constraint on a single dimension.
+
+        Args:
+            dimension: Dimension object or dimension name string
+            hierarchy: Name of specific hierarchy to use (None = default)
+            invert: If true, inverts the cut (NOT operation)
+            hidden: If true, cut is internal and not shown to users
+        """
+        self.dimension = dimension
+        self.hierarchy = hierarchy
+        self.invert = invert
+        self.hidden = hidden
+
+    def to_dict(self):
+        """Returns dictionary representation fo the receiver. The keys are:
+        `dimension`."""
+        d = OrderedDict()
+
+        # Placeholder for 'type' to be at the beginning of the list
+        d['type'] = None
+
+        d["dimension"] = str(self.dimension)
+        d["hierarchy"] = str(self.hierarchy) if self.hierarchy else None
+        d["level_depth"] = self.level_depth()
+        d["invert"] = self.invert
+        d["hidden"] = self.hidden
+
+        return d
+
+    def level_depth(self):
+        """Returns deepest level number. Subclasses should implement this
+        method"""
+        raise NotImplementedError
+
+    def __repr__(self):
+        return str(self.to_dict())
+
+
 class Cell(object):
     """Part of a cube determined by slicing dimensions. Immutable object."""
-    def __init__(self, cube=None, cuts=None):
-        if not isinstance(cube, Cube):
-            raise ArgumentError("Cell cube should be sublcass of Cube, "
-                                "provided: %s" % type(cube).__name__)
+    def __init__(self, cube: Cube, cuts: Optional[List[Cut]] = None):
         self.cube = cube
         self.cuts = cuts if cuts is not None else []
 
@@ -193,7 +239,7 @@ class Cell(object):
 
         return cell
 
-    def cut_for_dimension(self, dimension):
+    def cut_for_dimension(self, dimension: Union[str, Dimension]) -> Optional[Cut]:
         """Return first found cut for given `dimension`"""
         dimension = self.cube.dimension(dimension)
 
@@ -733,43 +779,13 @@ def path_from_string(string):
     return path
 
 
-class Cut(object):
-    def __init__(self, dimension, hierarchy=None, invert=False,
-                 hidden=False):
-        """Abstract class for a cell cut."""
-        self.dimension = dimension
-        self.hierarchy = hierarchy
-        self.invert = invert
-        self.hidden = hidden
-
-    def to_dict(self):
-        """Returns dictionary representation fo the receiver. The keys are:
-        `dimension`."""
-        d = OrderedDict()
-
-        # Placeholder for 'type' to be at the beginning of the list
-        d['type'] = None
-
-        d["dimension"] = str(self.dimension)
-        d["hierarchy"] = str(self.hierarchy) if self.hierarchy else None
-        d["level_depth"] = self.level_depth()
-        d["invert"] = self.invert
-        d["hidden"] = self.hidden
-
-        return d
-
-    def level_depth(self):
-        """Returns deepest level number. Subclasses should implement this
-        method"""
-        raise NotImplementedError
-
-    def __repr__(self):
-        return str(self.to_dict())
-
 
 class PointCut(Cut):
     """Object describing way of slicing a cube (cell) through point in a
-    dimension"""
+    dimension
+
+    Single value selection (e.g., year=2023)
+    """
 
     def __init__(self, dimension, path, hierarchy=None, invert=False,
                  hidden=False):
@@ -928,4 +944,3 @@ class SetCut(Cut):
 
     def __ne__(self, other):
         return not self.__eq__(other)
-

@@ -4,6 +4,7 @@
 from __future__ import absolute_import
 
 from collections import OrderedDict, defaultdict
+from typing import Union
 
 from ..common import assert_all_instances, get_localizable_attributes
 # TODO: This should belong here
@@ -549,20 +550,13 @@ class Cube(ModelObject):
     def dimensions(self):
         return list(self._dimensions.values())
 
-    def dimension(self, obj):
+    def dimension(self, obj: Union[str, Dimension]) -> Dimension:
         """Get dimension object. If `obj` is a string, then dimension with
         given name is returned, otherwise dimension object is returned if it
         belongs to the cube.
 
         Raises `NoSuchDimensionError` when there is no such dimension.
         """
-
-        # FIXME: raise better exception if dimension does not exist, but is in
-        # the list of required dimensions
-
-        if not obj:
-            raise NoSuchDimensionError("Requested dimension should not be "
-                                       "none (cube '{}')".format(self.name))
 
         name = str(obj)
         try:
@@ -824,5 +818,3 @@ def expand_cube_metadata(metadata):
         metadata["dimensions"] = links
 
     return metadata
-
-
